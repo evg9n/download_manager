@@ -23,7 +23,7 @@ def gui() -> None:
 
     dict_files = {
         "base2020": 11,
-        "base2022": 1,
+        "base2022": 2,
         "base2017": 6,
         "bib_smetcica": 13,
         "grand_smeta12_3_3": 5,
@@ -143,8 +143,9 @@ def gui() -> None:
         # 2022
         count = dict_files["base2022"]
         if values.get('bd2022'):
+            list_number = [3, 5]
 
-            for number in range(3, 4):
+            for number in list_number:
                 print(f'Загрузка файла NB12100{number}')
                 log.debug(f'Загрузка файла NB12100{number}')
                 window.refresh()
