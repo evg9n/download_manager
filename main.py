@@ -29,7 +29,10 @@ def gui() -> None:
         "bib_smetcica": 13,
         "grand_smeta12_3_3": 5,
         "grand_smeta13_1_0": 5,
-        "lic": 1
+        "lic": 1,
+        "ucrup_norm": 1,
+        "pir": 1,
+        "ved_sbor": 1
     }
 
     download_score_max = sum(dict_files.values())
@@ -71,6 +74,11 @@ def gui() -> None:
             sg.Checkbox(text='ФСНБ-2022', default=False, key='bd2022'),
             sg.Checkbox(text='Библиотека сметчика', default=False, key='bib_smet')
         ],
+        [
+            sg.Checkbox(text='Укрупненные нормативы', default=False, key='ucrup_norm'),
+            sg.Checkbox(text='Проектно-изыскательские работы', default=False, key='pir'),
+            sg.Checkbox(text='Ведомcтвенные и прочие сборники', default=False, key='ved_sbor')
+        ],
         [sg.Text('Путь для баз:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать', key='path_save_base')],
         [sg.Checkbox(text='Гранд смета 2022.3.3', default=False, key='grand_smeta12_3_3'),
          sg.Checkbox(text='Гранд смета 2023.1.0', default=False, key="grand_smeta13_1_0")],
@@ -82,7 +90,7 @@ def gui() -> None:
             sg.ProgressBar(max_value=download_score_max, orientation='h', size=(20, 20), key='progress_1',
                            style='winnative', border_width=1, visible=True)
          ],
-        [sg.Output(size=(88, 5))],
+        [sg.Output(size=(60, 2))],
         [sg.Submit(button_text='Загрузить'), sg.CloseButton(button_text='Закрыть')],
     ]
 
@@ -135,11 +143,12 @@ def gui() -> None:
         if values.get('bd2020'):
 
             for number in range(count):
-                print(f'Загрузка файла NB1080{number}.zip')
-                log.debug(f'Загрузка файла NB1080{number}.zip')
+                name = f"0{number}" if number < 10 else f"{number}"
+                print(f'Загрузка файла NB1080{name}.zip')
+                log.debug(f'Загрузка файла NB1080{name}.zip')
                 window.refresh()
                 try:
-                    base2020(number=number, headers=headers, path=values.get('path_save_base'))
+                    base2020(number=name, headers=headers, path=values.get('path_save_base'))
                 except Exception:
                     log.error(f"Не удалось загрузить NB1080{number} {format_exc()}")
                     downloader += 1
@@ -219,6 +228,48 @@ def gui() -> None:
             downloader += count
             window['progress_1'].update(downloader)
 
+        # Укрупненные нормативы
+        count = dict_files["ucrup_norm"]
+        if values.get("ucrup_norm"):
+            print(f'Загрузка файла nb100009.zip')
+            log.debug(f'Загрузка файла nb100009.zip')
+            window.refresh()
+            try:
+                ucrup_norm(headers=headers, path=values.get('path_save_base'))
+            except Exception:
+                log.error(f"Не удалось загрузить nb100009.zip {format_exc()}")
+
+        downloader += count
+        window['progress_1'].update(downloader)
+
+        # Проектно-изыскательские работы
+        count = dict_files["pir"]
+        if values.get("pir"):
+            print(f'Загрузка файла nb110010.zip')
+            log.debug(f'Загрузка файла nb110010.zip')
+            window.refresh()
+            try:
+                pir(headers=headers, path=values.get('path_save_base'))
+            except Exception:
+                log.error(f"Не удалось загрузить nb110010.zip {format_exc()}")
+
+        downloader += count
+        window['progress_1'].update(downloader)
+
+        # Ведомcтвенные и прочие сборники
+        count = dict_files["ved_sbor"]
+        if values.get("ved_sbor"):
+            print(f'Загрузка файла nb100003.zip')
+            log.debug(f'Загрузка файла nb100003.zip')
+            window.refresh()
+            try:
+                ved_sbor(headers=headers, path=values.get('path_save_base'))
+            except Exception:
+                log.error(f"Не удалось загрузить nb100003.zip {format_exc()}")
+
+        downloader += count
+        window['progress_1'].update(downloader)
+
         # Lic
         count = dict_files["lic"]
         if values.get('lic'):
@@ -237,7 +288,87 @@ def gui() -> None:
         log.debug("Готово")
 
 
-def base2020(number: int, headers: Dict, path: Union[str] = None) -> None:
+def ucrup_norm(headers: Dict, path: str) -> None:
+    """
+    Загрузка архива нормативной базы "Укрупненные нормативы" с распаковкой в указанную директорию path
+    :param headers: Заголовок get-запроса
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    path_arh = os.path.join('Download', f"nb100009.zip")
+    if f'nb100009.zip' in listdir:
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+    else:
+        url = 'https://cdn.grandsmeta.ru/ftp/grandsmeta/data/nb100009.zip'
+
+        res = get(url=url, headers=headers)
+
+        with open(path_arh, 'wb') as file:
+            file.write(res.content)
+
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+
+    print(f'Файл nb100009.zip загружен')
+
+
+def pir(headers: Dict, path: str) -> None:
+    """
+    Загрузка архива нормативной базы "Проектно-изыскательские работы" с распаковкой в указанную директорию path
+    :param headers: Заголовок get-запроса
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    path_arh = os.path.join('Download', f"nb110010.zip")
+
+    if f'nb110010.zip' in listdir:
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+    else:
+        url = 'https://cdn.grandsmeta.ru/ftp/grandsmeta/data/nb110010.zip'
+
+        res = get(url=url, headers=headers)
+
+        with open(path_arh, 'wb') as file:
+            file.write(res.content)
+
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+
+    print(f'Файл nb110010.zip загружен')
+
+
+def ved_sbor(headers: Dict, path: str) -> None:
+    """
+    Загрузка архива нормативной базы "Ведомственные и прочие сборники" с распаковкой в указанную директорию path
+    :param headers: Заголовок get-запроса
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    path_arh = os.path.join('Download', f"nb100003.zip")
+
+    if f'nb100003.zip' in listdir:
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+    else:
+        url = 'https://cdn.grandsmeta.ru/ftp/grandsmeta/data/nb100003.zip'
+
+        res = get(url=url, headers=headers)
+
+        with open(path_arh, 'wb') as file:
+            file.write(res.content)
+
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+
+    print(f'Файл nb100003.zip загружен')
+
+
+def base2020(number: str, headers: Dict, path: Union[str] = None) -> None:
     """
     Загрузка архива нормативной базы 2020 с распаковкой в указанную директорию path
     :param number: Номер базы
@@ -246,16 +377,17 @@ def base2020(number: int, headers: Dict, path: Union[str] = None) -> None:
     :return: None
     """
     listdir = os.listdir('Download')
-    name = f'NB10800{number}' if number < 10 else f'NB1080{number}'
+    name = f'NB1080{number}'
+    path_arh = os.path.join('Download', f"{name}.zip")
     if f'{name}.zip' in listdir:
-        with ZipFile(rf'Download\{name}.zip') as zipp:
+        with ZipFile(path_arh) as zipp:
             zipp.extractall(path=path)
 
     else:
         url = f'https://ftp.grandsmeta.ru/grandsmeta/data/2020/{name}.zip'
 
         res = get(url=url, headers=headers)
-        path_arh = os.path.join('Download', f"{name}.zip")
+
         with open(path_arh, 'wb') as file:
             file.write(res.content)
 
@@ -276,14 +408,16 @@ def base2022(number: int, headers: Dict, path: str) -> None:
     listdir = os.listdir('Download')
 
     name = f'NB12100{number}'
+    path_arh = os.path.join('Download', f"{name}.zip")
+
     if f'{name}.zip' in listdir:
-        with ZipFile(rf'Download\{name}.zip') as zipp:
+        with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
     else:
         url = f'https://cdn.grandsmeta.ru/ftp/grandsmeta/data/2022/{name}.zip'
 
         res = get(url=url, headers=headers)
-        path_arh = os.path.join('Download', f"{name}.zip")
+
         with open(path_arh, 'wb') as file:
             file.write(res.content)
 
@@ -302,14 +436,16 @@ def bib_smetcica(number: int, headers: Dict, path: Union[str] = None) -> None:
     :return: None
     """
     listdir = os.listdir('Download')
+    path_arh = os.path.join('Download', f"NB1120{number}.zip")
+
     if f'NB1120{number}.zip' in listdir:
-        with ZipFile(f'Download/NB1120{number}.zip') as zipp:
+        with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
     else:
         url = f'https://ftp.grandsmeta.ru/grandsmeta/data/si/NB1120{number}.zip'
 
         res = get(url=url, headers=headers)
-        path_arh = os.path.join('Download', f"NB1120{number}.zip")
+
         with open(path_arh, 'wb') as file:
             file.write(res.content)
 
@@ -328,14 +464,16 @@ def base2017(number: int, headers: Dict, path: str) -> None:
     :return: None
     """
     listdir = os.listdir('Download')
+    path_arh = os.path.join('Download', f"NB10700{number}.zip")
+
     if f'NB10700{number}.zip' in listdir:
-        with ZipFile(f'Download/NB10700{number}.zip') as zipp:
+        with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
     else:
         url = f'https://ftp.grandsmeta.ru/grandsmeta/data/2017/nb10700{number}.zip'
         res = get(url=url, headers=headers)
-        path_arh = os.path.join('Download', f"NB10700{number}.zip")
+
         with open(path_arh, 'wb') as file:
             file.write(res.content)
 
