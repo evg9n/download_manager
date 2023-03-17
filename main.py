@@ -1,3 +1,4 @@
+from time import time
 from shutil import move
 from typing import Union, Dict
 import os
@@ -6,6 +7,7 @@ from zipfile import ZipFile
 import PySimpleGUI as sg
 from logging import basicConfig, getLogger, DEBUG
 from traceback import format_exc
+from yadisk import YaDisk
 
 
 log = getLogger()
@@ -21,6 +23,8 @@ def gui() -> None:
     :return: None
     """
     key = False
+
+
 
     dict_files = {
         "base2020": 11,
@@ -84,6 +88,7 @@ def gui() -> None:
         [sg.Checkbox(text='Гранд смета 2022.3.3', default=False, key='grand_smeta12_3_3'),
          sg.Checkbox(text='Гранд смета 2023.1.0', default=False, key="grand_smeta13_1_0"),
          sg.Checkbox(text='Гранд смета 2023.1.1', default=False, key="grand_smeta13_1_1")],
+        [sg.Checkbox(text='Яндекс Диск', default=True, key='yadisk')],
         [sg.Checkbox(text='Lic', default=False, key='lic')],
         [sg.Text('Путь для лицензий:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать',
                                                                         key='path_save_lic')],
@@ -102,6 +107,7 @@ def gui() -> None:
     while key:
         downloader = 0
         event, values = window.read()
+        window['progress_1'].update(downloader)
 
         if event in (None, 'Exit', 'Cancel'):
             log.debug('Выход')
@@ -110,6 +116,15 @@ def gui() -> None:
         if not os.path.exists('Download'):
             os.mkdir('Download')
 
+        flag_yadisk = values.get('yadisk')
+        if flag_yadisk:
+            log.info('Загружается с яндекс диска')
+            token = 'y0_AgAAAABaMOijAAlKtgAAAADetvbzbJVgeUqxQke0TgdLdkV4W5gD318'
+            disk = YaDisk(token=token)
+        else:
+            log.info('Загружается с сайта www.grandsmeta.ru')
+
+        start = time()
         # Гранд Смета 2023.1.1
         count = dict_files["grand_smeta13_1_1"]
         if values.get('grand_smeta13_1_1'):
@@ -117,7 +132,10 @@ def gui() -> None:
             log.debug('Загрузка дистрибутива Гранд Смета 2023.1.1')
             window.refresh()
             try:
-                grand_smeta13_1_1(headers=headers)
+                if flag_yadisk:
+                    grand_smeta13_1_1_yadisk(disk=disk)
+                else:
+                    grand_smeta13_1_1(headers=headers)
             except Exception:
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.1 {format_exc()}")
 
@@ -131,7 +149,10 @@ def gui() -> None:
             log.debug('Загрузка дистрибутива Гранд Смета 2023.1.0')
             window.refresh()
             try:
-                grand_smeta13_1_0(headers=headers)
+                if flag_yadisk:
+                    grand_smeta13_1_0_yadisk(disk=disk)
+                else:
+                    grand_smeta13_1_0(headers=headers)
             except Exception:
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.0 {format_exc()}")
 
@@ -145,7 +166,10 @@ def gui() -> None:
             log.debug('Загрузка дистрибутива Гранд Смета 2022.3.3')
             window.refresh()
             try:
-                grand_smeta12_3_3(headers=headers)
+                if flag_yadisk:
+                    grand_smeta12_3_3_yadisk(disk=disk)
+                else:
+                    grand_smeta12_3_3(headers=headers)
             except Exception:
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2022.3.3 {format_exc()}")
 
@@ -164,7 +188,10 @@ def gui() -> None:
                 log.debug(f'Загрузка файла NB1080{name}.zip')
                 window.refresh()
                 try:
-                    base2020(number=name, headers=headers, path=values.get('path_save_base'))
+                    if flag_yadisk:
+                        base2020_yadisk(number=name, disk=disk, path=values.get('path_save_base'))
+                    else:
+                        base2020(number=name, headers=headers, path=values.get('path_save_base'))
                 except Exception:
                     log.error(f"Не удалось загрузить NB1080{number} {format_exc()}")
                     downloader += 1
@@ -186,7 +213,10 @@ def gui() -> None:
                 log.debug(f"Загрузка файла NB10700{number}.zip")
                 window.refresh()
                 try:
-                    base2017(number=number, headers=headers, path=values.get('path_save_base'))
+                    if flag_yadisk:
+                        base2017_yadisk(number=number, disk=disk, path=values.get('path_save_base'))
+                    else:
+                        base2017(number=number, headers=headers, path=values.get('path_save_base'))
                 except Exception:
                     log.error(f"Не удалось загрузить NB10700{number} {format_exc()}")
                     downloader += 1
@@ -208,7 +238,10 @@ def gui() -> None:
                 log.debug(f'Загрузка файла NB12100{number}')
                 window.refresh()
                 try:
-                    base2022(number=number, headers=headers, path=values.get('path_save_base'))
+                    if flag_yadisk:
+                        base2022_yandex(number=number, disk=disk, path=values.get('path_save_base'))
+                    else:
+                        base2022(number=number, headers=headers, path=values.get('path_save_base'))
                 except Exception:
                     log.error(f"Не удалось загрузить NB12100{number} {format_exc()}")
                     downloader += 1
@@ -232,7 +265,10 @@ def gui() -> None:
                 log.debug(f'Загрузка файла NB1120{number}.zip')
                 window.refresh()
                 try:
-                    bib_smetcica(number=number, headers=headers, path=values.get('path_save_base'))
+                    if flag_yadisk:
+                        bib_smetcica_yadisk(number=number,  disk=disk, path=values.get('path_save_base'))
+                    else:
+                        bib_smetcica(number=number, headers=headers, path=values.get('path_save_base'))
                 except Exception:
                     log.error(f"Не удалось загрузить NB1120{number} {format_exc()}")
                     downloader += 1
@@ -279,7 +315,10 @@ def gui() -> None:
             log.debug(f'Загрузка файла nb100003.zip')
             window.refresh()
             try:
-                ved_sbor(headers=headers, path=values.get('path_save_base'))
+                if flag_yadisk:
+                    ved_sbor_yadisk(disk=disk, path=values.get('path_save_base'))
+                else:
+                    ved_sbor(headers=headers, path=values.get('path_save_base'))
             except Exception:
                 log.error(f"Не удалось загрузить nb100003.zip {format_exc()}")
 
@@ -299,14 +338,25 @@ def gui() -> None:
 
         downloader += count
         window['progress_1'].update(downloader)
+        stop = time()
+        all_time = round(stop - start, 2)
 
-        print("Готово")
-        log.debug("Готово")
+        hour = int(all_time / 60 // 60)
+        minutes = int(all_time // 60 - 60 * hour)
+        seconds = int(round(all_time - (hour * 60 * 60 + minutes * 60), 0))
+
+        hour = hour if hour > 9 else f"0{hour}"
+        minutes = minutes if minutes > 9 else f"0{minutes}"
+        seconds = seconds if seconds > 9 else f"0{seconds}"
+
+        print(f"Готово за {hour}:{minutes}:{seconds}")
+        log.debug(f"Готово за {hour}:{minutes}:{seconds}")
 
 
 def ucrup_norm(headers: Dict, path: str) -> None:
     """
-    Загрузка архива нормативной базы "Укрупненные нормативы" с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы "Укрупненные нормативы" с распаковкой в указанную директорию path
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
     :return: None
@@ -327,12 +377,30 @@ def ucrup_norm(headers: Dict, path: str) -> None:
         with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
-    print(f'Файл nb100009.zip загружен')
+
+def ucrup_norm_yadisk(disk: YaDisk, path: str) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы "Укрупненные нормативы" с распаковкой в указанную директорию path
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    file_or_path = os.path.join('Download', f"NB100009.zip")
+
+    if f'NB100009.zip' in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/Прочие/NB100009.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
 
 
 def pir(headers: Dict, path: str) -> None:
     """
-    Загрузка архива нормативной базы "Проектно-изыскательские работы" с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы "Проектно-изыскательские работы" с распаковкой в указанную директорию path
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
     :return: None
@@ -354,12 +422,30 @@ def pir(headers: Dict, path: str) -> None:
         with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
-    print(f'Файл nb110010.zip загружен')
+
+def pir_yadisk(disk: YaDisk, path: str) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы "Проектно-изыскательские работы" с распаковкой в указанную директорию path
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    file_or_path = os.path.join('Download', f"NB110010.zip")
+
+    if f'NB110010.zip' not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/Прочие/NB110010.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
 
 
 def ved_sbor(headers: Dict, path: str) -> None:
     """
-    Загрузка архива нормативной базы "Ведомственные и прочие сборники" с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы "Ведомственные и прочие сборники" с распаковкой в указанную директорию path
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
     :return: None
@@ -381,12 +467,30 @@ def ved_sbor(headers: Dict, path: str) -> None:
         with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
-    print(f'Файл nb100003.zip загружен')
+
+def ved_sbor_yadisk(disk: YaDisk, path: str) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы "Ведомственные и прочие сборники" с распаковкой в указанную директорию path
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    file_or_path = os.path.join('Download', f"nb100003.zip")
+
+    if f'nb100003.zip' not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/Прочие/nb100003.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
 
 
 def base2020(number: str, headers: Dict, path: Union[str] = None) -> None:
     """
-    Загрузка архива нормативной базы 2020 с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы 2020 с распаковкой в указанную директорию path
     :param number: Номер базы
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
@@ -410,12 +514,32 @@ def base2020(number: str, headers: Dict, path: Union[str] = None) -> None:
         with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
-    print(f'Файл {name}.zip установлен')
+
+def base2020_yadisk(number: str, disk: YaDisk, path: Union[str] = None) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы 2020 с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    name = f'NB1080{number}.zip'
+    file_or_path = os.path.join('Download', name)
+
+    if name not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/2020/{name}'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
 
 
 def base2022(number: int, headers: Dict, path: str) -> None:
     """
-    Загрузка архива нормативной базы 2022 с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы 2022 с распаковкой в указанную директорию path
     :param number: Номер базы
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
@@ -440,12 +564,33 @@ def base2022(number: int, headers: Dict, path: str) -> None:
         with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
-    print(f'')
+
+def base2022_yandex(number: int, disk: YaDisk, path: str) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы 2022 с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+
+    name = f'NB12100{number}.zip'
+    file_or_path = os.path.join('Download', name)
+
+    if name not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/2022/{name}'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
 
 
 def bib_smetcica(number: int, headers: Dict, path: Union[str] = None) -> None:
     """
-    Загрузка архива нормативной базы библиотеки сметчика с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы библиотеки сметчика с распаковкой в указанную директорию path
     :param number: Номер базы
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
@@ -471,9 +616,30 @@ def bib_smetcica(number: int, headers: Dict, path: Union[str] = None) -> None:
     print(f'Файл NB1120{number}.zip загружен')
 
 
+def bib_smetcica_yadisk(number: int, disk: YaDisk, path: Union[str] = None) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы библиотеки сметчика с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    file_or_path = os.path.join('Download', f"NB1120{number}.zip")
+
+    if f'NB1120{number}.zip' not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/Библиотека сметчика/NB1120{number}.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
+
+
 def base2017(number: int, headers: Dict, path: str) -> None:
     """
-    Загрузка архива нормативной базы 2017 с распаковкой в указанную директорию path
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы 2017 с распаковкой в указанную директорию path
     :param number: Номер базы
     :param headers: Заголовок get-запроса
     :param path: Путь распаковки
@@ -496,12 +662,33 @@ def base2017(number: int, headers: Dict, path: str) -> None:
         with ZipFile(path_arh) as zipp:
             zipp.extractall(path)
 
+
+def base2017_yadisk(number: int, disk: YaDisk, path: str) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы 2017 с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    file_or_path = os.path.join('Download', f"NB10700{number}.zip")
+
+    if f'NB10700{number}.zip' not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/2017/NB10700{number}.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
+
     print(f"Файл NB10700{number}.zip установлен")
 
 
 def grand_smeta13_1_1(headers: Dict) -> None:
     """
-    Загружает и распаковыем дистрибутив программы Гранд Смета 2023.1.1 в директорию Download
+    Загружает c официального сайта Гранд Смета www.grandsmeta.ru
+    и распаковыем дистрибутив программы Гранд Смета 2023.1.1 в директорию Download
     :param headers: Заголовок get-запроса
     :return: None
     """
@@ -516,9 +703,26 @@ def grand_smeta13_1_1(headers: Dict) -> None:
         zipp.extractall('Download')
 
 
+def grand_smeta13_1_1_yadisk(disk: YaDisk) -> None:
+    """
+    Загружает c яндекс диска
+    и распаковыем дистрибутив программы Гранд Смета 2023.1.1 в директорию Download
+    :param disk: Диск
+    :return: None
+    """
+
+    src_path = 'disk:/Загрузки/ГС/GRAND Смета/Дистрибутивы/smeta2023.1.1.zip'
+    file_or_path = os.path.join('Download', "smeta2023.1.1.zip")
+    disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall('Download')
+
+
 def grand_smeta13_1_0(headers: Dict) -> None:
     """
-    Загружает и распаковыем дистрибутив программы Гранд Смета 2023.1.0 в директорию Download
+    Загружает c официального сайта Гранд Смета www.grandsmeta.ru
+    и распаковыем дистрибутив программы Гранд Смета 2023.1.0 в директорию Download
     :param headers: Заголовок get-запроса
     :return: None
     """
@@ -533,9 +737,26 @@ def grand_smeta13_1_0(headers: Dict) -> None:
         zipp.extractall('Download')
 
 
+def grand_smeta13_1_0_yadisk(disk: YaDisk) -> None:
+    """
+    Загружает c яндекс диска
+    и распаковыем дистрибутив программы Гранд Смета 2023.1.0 в директорию Download
+    :param disk: Диск
+    :return: None
+    """
+
+    src_path = 'disk:/Загрузки/ГС/GRAND Смета/Дистрибутивы/smeta2023.1.0.zip'
+    file_or_path = os.path.join('Download', "smeta2023.1.0.zip")
+    disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall('Download')
+
+
 def grand_smeta12_3_3(headers: Dict) -> None:
     """
-    Загружает и распаковыем дистрибутив программы Гранд Смета 2022.3.3 в директорию Download
+    Загружает c официального сайта Гранд Смета www.grandsmeta.ru
+    и распаковыем дистрибутив программы Гранд Смета 2022.3.3 в директорию Download
     :param headers: Заголовок get-запроса
     :return: None
     """
@@ -547,6 +768,22 @@ def grand_smeta12_3_3(headers: Dict) -> None:
         file.write(res.content)
 
     with ZipFile(path_arh) as zipp:
+        zipp.extractall('Download')
+
+
+def grand_smeta12_3_3_yadisk(disk: YaDisk) -> None:
+    """
+    Загружает c яндекс диска
+    и распаковыем дистрибутив программы Гранд Смета 2022.3.3 в директорию Download
+    :param disk: Диск
+    :return: None
+    """
+
+    src_path = 'disk:/Загрузки/ГС/GRAND Смета/Дистрибутивы/smeta2022.3.3.zip'
+    file_or_path = os.path.join('Download', "smeta2022.3.3.zip")
+    disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
         zipp.extractall('Download')
 
 
@@ -563,4 +800,6 @@ def lic(path: str) -> None:
 
 
 if __name__ == '__main__':
+
     gui()
+    print()
