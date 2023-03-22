@@ -24,12 +24,11 @@ def gui() -> None:
     """
     key = False
 
-
-
     dict_files = {
         "base2020": 11,
         "base2022": 2,
         "base2017": 6,
+        "rt": 5,
         "bib_smetcica": 13,
         "grand_smeta12_3_3": 5,
         "grand_smeta13_1_0": 5,
@@ -82,7 +81,8 @@ def gui() -> None:
         [
             sg.Checkbox(text='Укрупненные нормативы', default=False, key='ucrup_norm'),
             sg.Checkbox(text='Проектно-изыскательские работы', default=False, key='pir'),
-            sg.Checkbox(text='Ведомcтвенные и прочие сборники', default=False, key='ved_sbor')
+            sg.Checkbox(text='Ведомcтвенные и прочие сборники', default=False, key='ved_sbor'),
+            sg.Checkbox(text='РТ', default=False, key='rt')
         ],
         [sg.Text('Путь для баз:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать', key='path_save_base')],
         [sg.Checkbox(text='Гранд смета 2022.3.3', default=False, key='grand_smeta12_3_3'),
@@ -219,6 +219,27 @@ def gui() -> None:
                         base2017(number=number, headers=headers, path=values.get('path_save_base'))
                 except Exception:
                     log.error(f"Не удалось загрузить NB10700{number} {format_exc()}")
+                    downloader += 1
+                    continue
+                downloader += 1
+                window['progress_1'].update(downloader)
+
+        else:
+            downloader += count
+            window['progress_1'].update(downloader)
+
+        # РТ
+        count = dict_files["rt"]
+        if values.get('rt'):
+
+            for number in range(count):
+                print(f"Загрузка файла NB10416{number}.zip")
+                log.debug(f"Загрузка файла NB10416{number}.zip")
+                window.refresh()
+                try:
+                    rt_yadisk(number=number, disk=disk, path=values.get('path_save_base'))
+                except Exception:
+                    log.error(f"Не удалось загрузить NB10416{number} {format_exc()}")
                     downloader += 1
                     continue
                 downloader += 1
@@ -683,6 +704,28 @@ def base2017_yadisk(number: int, disk: YaDisk, path: str) -> None:
         zipp.extractall(path)
 
     print(f"Файл NB10700{number}.zip установлен")
+
+
+def rt_yadisk(number: int, disk: YaDisk, path: str):
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы РТ с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    file_or_path = os.path.join('Download', f"NB10416{number}.zip")
+
+    if f'NB10416{number}.zip' not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/РТ/NB10416{number}.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
+
+    print(f"Файл NB10416{number}.zip установлен")
 
 
 def grand_smeta13_1_1(headers: Dict) -> None:
