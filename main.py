@@ -5,16 +5,44 @@ import os
 from requests import get
 from zipfile import ZipFile
 import PySimpleGUI as sg
-from logging import basicConfig, getLogger, DEBUG
+from logging import config, getLogger, DEBUG
 from traceback import format_exc
 from yadisk import YaDisk
+from yadisk.exceptions import UnavailableError
 
 
-log = getLogger()
 FORMAT = "%(levelname)-8s [%(asctime)s] %(message)s"
 datefmt = '%d.%m.%y %H:%M:%S'
-basicConfig(filename='log.log', format=FORMAT, datefmt=datefmt,
-            level=DEBUG, encoding='utf-8')
+
+log_config = {
+    'version': 1,
+    'formatters': {
+        'for_file':{
+            'format': FORMAT,
+            'datefmt': datefmt
+        }
+    },
+    'handlers': {
+        'for_file': {
+            'class': 'logging.FileHandler',
+            'filename': 'log.log',
+            'encoding': 'utf-8',
+            'formatter': 'for_file',
+            'level': DEBUG
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['for_file'],
+            'level': DEBUG
+        }
+    }
+}
+config.dictConfig(log_config)
+log = getLogger()
+
+# basicConfig(filename='log.log', format=FORMAT, datefmt=datefmt,
+#             level=DEBUG, encoding='utf-8')
 
 
 def gui() -> None:
@@ -133,10 +161,10 @@ def gui() -> None:
             window.refresh()
             try:
                 if flag_yadisk:
-                    grand_smeta13_1_1_yadisk(disk=disk)
+                        grand_smeta13_1_1_yadisk(disk=disk)
                 else:
                     grand_smeta13_1_1(headers=headers)
-            except Exception:
+            except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.1 {format_exc()}")
 
         downloader += count
@@ -153,7 +181,7 @@ def gui() -> None:
                     grand_smeta13_1_0_yadisk(disk=disk)
                 else:
                     grand_smeta13_1_0(headers=headers)
-            except Exception:
+            except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.0 {format_exc()}")
 
         downloader += count
@@ -170,7 +198,7 @@ def gui() -> None:
                     grand_smeta12_3_3_yadisk(disk=disk)
                 else:
                     grand_smeta12_3_3(headers=headers)
-            except Exception:
+            except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2022.3.3 {format_exc()}")
 
         downloader += count
@@ -192,7 +220,7 @@ def gui() -> None:
                         base2020_yadisk(number=name, disk=disk, path=values.get('path_save_base'))
                     else:
                         base2020(number=name, headers=headers, path=values.get('path_save_base'))
-                except Exception:
+                except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB1080{number} {format_exc()}")
                     downloader += 1
                     continue
@@ -217,7 +245,7 @@ def gui() -> None:
                         base2017_yadisk(number=number, disk=disk, path=values.get('path_save_base'))
                     else:
                         base2017(number=number, headers=headers, path=values.get('path_save_base'))
-                except Exception:
+                except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB10700{number} {format_exc()}")
                     downloader += 1
                     continue
@@ -238,7 +266,7 @@ def gui() -> None:
                 window.refresh()
                 try:
                     rt_yadisk(number=number, disk=disk, path=values.get('path_save_base'))
-                except Exception:
+                except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB10416{number} {format_exc()}")
                     downloader += 1
                     continue
@@ -255,15 +283,15 @@ def gui() -> None:
             list_number = [3, 5]
 
             for number in list_number:
-                print(f'Загрузка файла NB12100{number}')
-                log.debug(f'Загрузка файла NB12100{number}')
+                print(f'Загрузка файла NB12100{number}.zip')
+                log.debug(f'Загрузка файла NB12100{number}.zip')
                 window.refresh()
                 try:
                     if flag_yadisk:
                         base2022_yandex(number=number, disk=disk, path=values.get('path_save_base'))
                     else:
                         base2022(number=number, headers=headers, path=values.get('path_save_base'))
-                except Exception:
+                except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB12100{number} {format_exc()}")
                     downloader += 1
                     continue
@@ -290,7 +318,7 @@ def gui() -> None:
                         bib_smetcica_yadisk(number=number,  disk=disk, path=values.get('path_save_base'))
                     else:
                         bib_smetcica(number=number, headers=headers, path=values.get('path_save_base'))
-                except Exception:
+                except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB1120{number} {format_exc()}")
                     downloader += 1
                     continue
@@ -340,7 +368,7 @@ def gui() -> None:
                     ved_sbor_yadisk(disk=disk, path=values.get('path_save_base'))
                 else:
                     ved_sbor(headers=headers, path=values.get('path_save_base'))
-            except Exception:
+            except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить nb100003.zip {format_exc()}")
 
         downloader += count
