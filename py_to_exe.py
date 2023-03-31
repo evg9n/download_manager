@@ -35,6 +35,6 @@ def py_to_exe(path_file: str, new_name_file: str = None, path_icon: str = ''):
 
 
 if __name__ == '__main__':
-    py_to_exe(path_file=r'main1.py',
-              new_name_file='m',
+    py_to_exe(path_file=r'main.py',
+              new_name_file='main',
               path_icon=r'icon.ico')
