@@ -17,7 +17,7 @@ datefmt = '%d.%m.%y %H:%M:%S'
 log_config = {
     'version': 1,
     'formatters': {
-        'for_file':{
+        'for_file': {
             'format': FORMAT,
             'datefmt': datefmt
         }
@@ -50,7 +50,6 @@ def gui() -> None:
     Графический интерфейс
     :return: None
     """
-    key = False
 
     dict_files = {
         "base2020": 11,
@@ -61,6 +60,7 @@ def gui() -> None:
         "grand_smeta12_3_3": 5,
         "grand_smeta13_1_0": 5,
         "grand_smeta13_1_1": 5,
+        "grand_smeta13_1_2": 5,
         "lic": 1,
         "ucrup_norm": 1,
         "pir": 1,
@@ -115,7 +115,8 @@ def gui() -> None:
         [sg.Text('Путь для баз:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать', key='path_save_base')],
         [sg.Checkbox(text='Гранд смета 2022.3.3', default=False, key='grand_smeta12_3_3'),
          sg.Checkbox(text='Гранд смета 2023.1.0', default=False, key="grand_smeta13_1_0"),
-         sg.Checkbox(text='Гранд смета 2023.1.1', default=False, key="grand_smeta13_1_1")],
+         sg.Checkbox(text='Гранд смета 2023.1.1', default=False, key="grand_smeta13_1_1"),
+         sg.Checkbox(text='Гранд смета 2023.1.2', default=False, key="grand_smeta13_1_2")],
         [sg.Checkbox(text='Яндекс Диск', default=True, key='yadisk')],
         [sg.Checkbox(text='Lic', default=False, key='lic')],
         [sg.Text('Путь для лицензий:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать',
@@ -153,6 +154,24 @@ def gui() -> None:
             log.info('Загружается с сайта www.grandsmeta.ru')
 
         start = time()
+
+        # Гранд Смета 2023.1.2
+        count = dict_files["grand_smeta13_1_2"]
+        if values.get('grand_smeta13_1_2'):
+            print('Загрузка дистрибутива Гранд Смета 2023.1.2')
+            log.debug('Загрузка дистрибутива Гранд Смета 2023.1.2')
+            window.refresh()
+            try:
+                if flag_yadisk:
+                    grand_smeta13_1_2_yadisk(disk=disk)
+                else:
+                    grand_smeta13_1_2(headers=headers)
+            except (Exception, UnavailableError):
+                log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.2 {format_exc()}")
+
+        downloader += count
+        window['progress_1'].update(downloader)
+
         # Гранд Смета 2023.1.1
         count = dict_files["grand_smeta13_1_1"]
         if values.get('grand_smeta13_1_1'):
@@ -161,7 +180,7 @@ def gui() -> None:
             window.refresh()
             try:
                 if flag_yadisk:
-                        grand_smeta13_1_1_yadisk(disk=disk)
+                    grand_smeta13_1_1_yadisk(disk=disk)
                 else:
                     grand_smeta13_1_1(headers=headers)
             except (Exception, UnavailableError):
@@ -754,6 +773,40 @@ def rt_yadisk(number: int, disk: YaDisk, path: str):
         zipp.extractall(path)
 
     print(f"Файл NB10416{number}.zip установлен")
+
+
+def grand_smeta13_1_2(headers: Dict) -> None:
+    """
+    Загружает c официального сайта Гранд Смета www.grandsmeta.ru
+    и распаковыем дистрибутив программы Гранд Смета 2023.1.2 в директорию Download
+    :param headers: Заголовок get-запроса
+    :return: None
+    """
+
+    url = 'https://cdn.grandsmeta.ru/ftp/grandsmeta/distrib/smeta2023.1.2.zip'
+    res = get(url=url, headers=headers)
+    path_arh = os.path.join('Download', "smeta2023.1.2.zip")
+    with open(path_arh, 'wb') as file:
+        file.write(res.content)
+
+    with ZipFile(path_arh) as zipp:
+        zipp.extractall('Download')
+
+
+def grand_smeta13_1_2_yadisk(disk: YaDisk) -> None:
+    """
+    Загружает c яндекс диска
+    и распаковыем дистрибутив программы Гранд Смета 2023.1.2 в директорию Download
+    :param disk: Диск
+    :return: None
+    """
+
+    src_path = 'disk:/Загрузки/ГС/GRAND Смета/Дистрибутивы/smeta2023.1.2.zip'
+    file_or_path = os.path.join('Download', "smeta2023.1.2.zip")
+    disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall('Download')
 
 
 def grand_smeta13_1_1(headers: Dict) -> None:
