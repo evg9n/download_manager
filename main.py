@@ -55,6 +55,8 @@ def gui() -> None:
         "base2020": 11,
         "base2022": 2,
         "base2017": 6,
+        "base2001_2009": 8,
+        "base2001_2014": 4,
         "rt": 5,
         "bib_smetcica": 13,
         "grand_smeta12_3_3": 5,
@@ -100,6 +102,10 @@ def gui() -> None:
                              'Chrome/50.0.2661.102 Safari/537.36'}
 
     field_two = [
+        [
+            sg.Checkbox(text='ГЭСН-ФЭР 2001 в редакции 2009 года', default=False, key='base2001_2009'),
+            sg.Checkbox(text='ГЭСН-ФЭР 2001 в редакции 2014 года', default=False, key='base2001_2014'),
+        ],
         [
             sg.Checkbox(text='ГЭСН-ФЭР 2020', default=False, key='bd2020'),
             sg.Checkbox(text='ГЭСН-ФЭР 2017', default=False, key='bd2017'),
@@ -348,6 +354,61 @@ def gui() -> None:
             downloader += count
             window['progress_1'].update(downloader)
 
+        # 2001 2009
+        count = dict_files["base2001_2009"]
+        window['progress_1'].update(downloader)
+
+        if values.get('base2001_2009'):
+
+            for number in range(count):
+
+                print(f'Загрузка файла NB10400{number}.zip')
+                log.debug(f'Загрузка файла NB10400{number}.zip')
+                window.refresh()
+                try:
+                    if flag_yadisk:
+                        base2001_2009_yadisk(number=str(number), disk=disk, path=values.get('path_save_base'))
+                    else:
+                        base2001_2009(number=str(number), headers=headers, path=values.get('path_save_base'))
+                except (Exception, UnavailableError):
+                    log.error(f"Не удалось загрузить NB10400{number} {format_exc()}")
+                    downloader += 1
+                    continue
+
+                downloader += 1
+                window['progress_1'].update(downloader)
+
+        else:
+            downloader += count
+            window['progress_1'].update(downloader)
+
+        # 2001 2014
+        count = dict_files["base2001_2014"]
+        window['progress_1'].update(downloader)
+
+        if values.get('base2001_2014'):
+
+            for number in range(count):
+                print(f'Загрузка файла NB10500{number}.zip')
+                log.debug(f'Загрузка файла NB10500{number}.zip')
+                window.refresh()
+                try:
+                    if flag_yadisk:
+                        base2001_2014_yadisk(number=str(number), disk=disk, path=values.get('path_save_base'))
+                    else:
+                        base2001_2014(number=str(number), headers=headers, path=values.get('path_save_base'))
+                except (Exception, UnavailableError):
+                    log.error(f"Не удалось загрузить NB10500{number} {format_exc()}")
+                    downloader += 1
+                    continue
+
+                downloader += 1
+                window['progress_1'].update(downloader)
+
+        else:
+            downloader += count
+            window['progress_1'].update(downloader)
+
         # Укрупненные нормативы
         count = dict_files["ucrup_norm"]
         if values.get("ucrup_norm"):
@@ -549,6 +610,104 @@ def ved_sbor_yadisk(disk: YaDisk, path: str) -> None:
 
     if f'nb100003.zip' not in listdir:
         src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/Прочие/nb100003.zip'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
+
+
+def base2001_2014(number: str, headers: Dict, path: Union[str] = None) -> None:
+    """
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы 2014 в редакции 2009 года с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param headers: Заголовок get-запроса
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    name = f'NB10500{number}'
+    path_arh = os.path.join('Download', f"{name}.zip")
+    if f'{name}.zip' in listdir:
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path=path)
+
+    else:
+        url = f'https://cdn.grandsmeta.ru/ftp/grandsmeta/data/2014/{name}.zip'
+
+        res = get(url=url, headers=headers)
+
+        with open(path_arh, 'wb') as file:
+            file.write(res.content)
+
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+
+
+def base2001_2014_yadisk(number: str, disk: YaDisk, path: Union[str] = None) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы 2001 в редакции 2014 года с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    name = f'NB10500{number}.zip'
+    file_or_path = os.path.join('Download', name)
+
+    if name not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/2001(в ред. 2014)/{name}'
+        disk.download(src_path, file_or_path)
+
+    with ZipFile(file_or_path) as zipp:
+        zipp.extractall(path)
+
+
+def base2001_2009(number: str, headers: Dict, path: Union[str] = None) -> None:
+    """
+    Загрузка архива c официального сайта Гранд Смета www.grandsmeta.ru
+    нормативной базы 2001 в редакции 2009 года с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param headers: Заголовок get-запроса
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    name = f'NB10400{number}'
+    path_arh = os.path.join('Download', f"{name}.zip")
+    if f'{name}.zip' in listdir:
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path=path)
+
+    else:
+        url = f'https://cdn.grandsmeta.ru/ftp/grandsmeta/data/2009/{name}.zip'
+
+        res = get(url=url, headers=headers)
+
+        with open(path_arh, 'wb') as file:
+            file.write(res.content)
+
+        with ZipFile(path_arh) as zipp:
+            zipp.extractall(path)
+
+
+def base2001_2009_yadisk(number: str, disk: YaDisk, path: Union[str] = None) -> None:
+    """
+    Загрузка архива c яндекс диска
+    нормативной базы 2001 в редакции 2009 года с распаковкой в указанную директорию path
+    :param number: Номер базы
+    :param disk: Диск
+    :param path: Путь распаковки
+    :return: None
+    """
+    listdir = os.listdir('Download')
+    name = f'NB10400{number}.zip'
+    file_or_path = os.path.join('Download', name)
+
+    if name not in listdir:
+        src_path = f'disk:/Загрузки/ГС/GRAND Смета/Базы/2001(в ред. 2009)/{name}'
         disk.download(src_path, file_or_path)
 
     with ZipFile(file_or_path) as zipp:
