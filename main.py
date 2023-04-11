@@ -51,7 +51,7 @@ def gui() -> None:
     :return: None
     """
 
-    dict_files = {
+    dict_files_all = {
         "base2020": 11,
         "base2022": 2,
         "base2017": 6,
@@ -68,8 +68,6 @@ def gui() -> None:
         "pir": 1,
         "ved_sbor": 1
     }
-
-    download_score_max = sum(dict_files.values())
 
     # Окно авторизации
     field_one = [
@@ -107,10 +105,10 @@ def gui() -> None:
             sg.Checkbox(text='ГЭСН-ФЭР 2001 в редакции 2014 года', default=False, key='base2001_2014'),
         ],
         [
-            sg.Checkbox(text='ГЭСН-ФЭР 2020', default=False, key='bd2020'),
-            sg.Checkbox(text='ГЭСН-ФЭР 2017', default=False, key='bd2017'),
-            sg.Checkbox(text='ФСНБ-2022', default=False, key='bd2022'),
-            sg.Checkbox(text='Библиотека сметчика', default=False, key='bib_smet')
+            sg.Checkbox(text='ГЭСН-ФЭР 2020', default=False, key='base2020'),
+            sg.Checkbox(text='ГЭСН-ФЭР 2017', default=False, key='base2017'),
+            sg.Checkbox(text='ФСНБ-2022', default=False, key='base2022'),
+            sg.Checkbox(text='Библиотека сметчика', default=False, key='bib_smetcica')
         ],
         [
             sg.Checkbox(text='Укрупненные нормативы', default=False, key='ucrup_norm'),
@@ -129,7 +127,7 @@ def gui() -> None:
                                                                         key='path_save_lic')],
         [
             sg.Text('Загрузка:'),
-            sg.ProgressBar(max_value=download_score_max, orientation='h', size=(20, 20), key='progress_1',
+            sg.ProgressBar(max_value=100, orientation='h', size=(20, 20), key='progress_1',
                            style='winnative', border_width=1, visible=True)
          ],
         [sg.Output(size=(60, 2))],
@@ -143,7 +141,6 @@ def gui() -> None:
         downloader = 0
         event, values = window.read()
         window['progress_1'].update(downloader)
-
         if event in (None, 'Exit', 'Cancel'):
             log.debug('Выход')
             return
@@ -159,11 +156,14 @@ def gui() -> None:
         else:
             log.info('Загружается с сайта www.grandsmeta.ru')
 
+        dict_files = {app: value for app, value in dict_files_all.items() if values.get(app)}
+        download_score_max = sum(dict_files.values())
+        window['progress_1'].update(current_count=0, max=download_score_max)
         start = time()
 
         # Гранд Смета 2023.1.2
-        count = dict_files["grand_smeta13_1_2"]
         if values.get('grand_smeta13_1_2'):
+            count = dict_files["grand_smeta13_1_2"]
             print('Загрузка дистрибутива Гранд Смета 2023.1.2')
             log.debug('Загрузка дистрибутива Гранд Смета 2023.1.2')
             window.refresh()
@@ -172,15 +172,16 @@ def gui() -> None:
                     grand_smeta13_1_2_yadisk(disk=disk)
                 else:
                     grand_smeta13_1_2(headers=headers)
+                log.debug(f"Загружен дистрибутив Гранд Смета 2023.1.2")
             except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.2 {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Гранд Смета 2023.1.1
-        count = dict_files["grand_smeta13_1_1"]
         if values.get('grand_smeta13_1_1'):
+            count = dict_files["grand_smeta13_1_1"]
             print('Загрузка дистрибутива Гранд Смета 2023.1.1')
             log.debug('Загрузка дистрибутива Гранд Смета 2023.1.1')
             window.refresh()
@@ -189,15 +190,17 @@ def gui() -> None:
                     grand_smeta13_1_1_yadisk(disk=disk)
                 else:
                     grand_smeta13_1_1(headers=headers)
+
+                log.debug(f"Загружен дистрибутив Гранд Смета 2023.1.1")
             except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.1 {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Гранд Смета 2023.1.0
-        count = dict_files["grand_smeta13_1_0"]
         if values.get('grand_smeta13_1_0'):
+            count = dict_files["grand_smeta13_1_0"]
             print('Загрузка дистрибутива Гранд Смета 2023.1.0')
             log.debug('Загрузка дистрибутива Гранд Смета 2023.1.0')
             window.refresh()
@@ -206,15 +209,16 @@ def gui() -> None:
                     grand_smeta13_1_0_yadisk(disk=disk)
                 else:
                     grand_smeta13_1_0(headers=headers)
+                log.debug(f"Загружен дистрибутив Гранд Смета 2023.1.0")
             except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.1.0 {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Гранд Смета 2022.3.3
-        count = dict_files["grand_smeta12_3_3"]
         if values.get('grand_smeta12_3_3'):
+            count = dict_files["grand_smeta12_3_3"]
             print('Загрузка дистрибутива Гранд Смета 2022.3.3')
             log.debug('Загрузка дистрибутива Гранд Смета 2022.3.3')
             window.refresh()
@@ -223,18 +227,18 @@ def gui() -> None:
                     grand_smeta12_3_3_yadisk(disk=disk)
                 else:
                     grand_smeta12_3_3(headers=headers)
+                log.debug(f"Загружен дистрибутив Гранд Смета 2022.3.3")
             except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2022.3.3 {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # 2020
-        count = dict_files["base2020"]
-        window['progress_1'].update(downloader)
-
-        if values.get('bd2020'):
-
+        # window['progress_1'].update(downloader)
+        if values.get('base2020'):
+            count = dict_files["base2020"]
+            log.error('base2020')
             for number in range(count):
                 name = f"0{number}" if number < 10 else f"{number}"
                 print(f'Загрузка файла NB1080{name}.zip')
@@ -245,22 +249,16 @@ def gui() -> None:
                         base2020_yadisk(number=name, disk=disk, path=values.get('path_save_base'))
                     else:
                         base2020(number=name, headers=headers, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB1080{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB1080{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-
-                downloader += 1
-                window['progress_1'].update(downloader)
-
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # 2017
-        count = dict_files["base2017"]
-        if values.get('bd2017'):
-
+        if values.get('base2017'):
+            count = dict_files["base2017"]
             for number in range(count):
                 print(f"Загрузка файла NB10700{number}.zip")
                 log.debug(f"Загрузка файла NB10700{number}.zip")
@@ -270,20 +268,16 @@ def gui() -> None:
                         base2017_yadisk(number=number, disk=disk, path=values.get('path_save_base'))
                     else:
                         base2017(number=number, headers=headers, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB10700{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB10700{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-                downloader += 1
-                window['progress_1'].update(downloader)
-
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # РТ
-        count = dict_files["rt"]
         if values.get('rt'):
+            count = dict_files["rt"]
 
             for number in range(count):
                 print(f"Загрузка файла NB10416{number}.zip")
@@ -291,20 +285,15 @@ def gui() -> None:
                 window.refresh()
                 try:
                     rt_yadisk(number=number, disk=disk, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB10416{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB10416{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-                downloader += 1
-                window['progress_1'].update(downloader)
-
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # 2022
-        count = dict_files["base2022"]
-        if values.get('bd2022'):
+        if values.get('base2022'):
             list_number = [3, 5]
 
             for number in list_number:
@@ -316,19 +305,15 @@ def gui() -> None:
                         base2022_yandex(number=number, disk=disk, path=values.get('path_save_base'))
                     else:
                         base2022(number=number, headers=headers, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB12100{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB12100{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-                downloader += 1
-                window['progress_1'].update(downloader)
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # Библиотека сметчика
-        count = dict_files["bib_smetcica"]
-        if values.get('bib_smet'):
+        if values.get('bib_smetcica'):
 
             all_number = ['01', '10', '11', '15', '16',
                           '20', '30', '40', '60', '61',
@@ -343,22 +328,16 @@ def gui() -> None:
                         bib_smetcica_yadisk(number=number,  disk=disk, path=values.get('path_save_base'))
                     else:
                         bib_smetcica(number=number, headers=headers, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB1120{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB1120{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-                downloader += 1
-                window['progress_1'].update(downloader)
-
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # 2001 2009
-        count = dict_files["base2001_2009"]
-        window['progress_1'].update(downloader)
-
         if values.get('base2001_2009'):
+            count = dict_files["base2001_2009"]
 
             for number in range(count):
 
@@ -370,24 +349,16 @@ def gui() -> None:
                         base2001_2009_yadisk(number=str(number), disk=disk, path=values.get('path_save_base'))
                     else:
                         base2001_2009(number=str(number), headers=headers, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB10400{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB10400{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-
-                downloader += 1
-                window['progress_1'].update(downloader)
-
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # 2001 2014
-        count = dict_files["base2001_2014"]
-        window['progress_1'].update(downloader)
-
         if values.get('base2001_2014'):
-
+            count = dict_files["base2001_2014"]
             for number in range(count):
                 print(f'Загрузка файла NB10500{number}.zip')
                 log.debug(f'Загрузка файла NB10500{number}.zip')
@@ -397,49 +368,46 @@ def gui() -> None:
                         base2001_2014_yadisk(number=str(number), disk=disk, path=values.get('path_save_base'))
                     else:
                         base2001_2014(number=str(number), headers=headers, path=values.get('path_save_base'))
+                    log.debug(f"Загружен NB10500{number}")
                 except (Exception, UnavailableError):
                     log.error(f"Не удалось загрузить NB10500{number} {format_exc()}")
+                finally:
                     downloader += 1
-                    continue
-
-                downloader += 1
-                window['progress_1'].update(downloader)
-
-        else:
-            downloader += count
-            window['progress_1'].update(downloader)
+                    window['progress_1'].update(downloader)
 
         # Укрупненные нормативы
-        count = dict_files["ucrup_norm"]
         if values.get("ucrup_norm"):
+            count = dict_files["ucrup_norm"]
             print(f'Загрузка файла nb100009.zip')
             log.debug(f'Загрузка файла nb100009.zip')
             window.refresh()
             try:
                 ucrup_norm(headers=headers, path=values.get('path_save_base'))
+                log.debug(f"Загружен nb100009.zip")
             except Exception:
                 log.error(f"Не удалось загрузить nb100009.zip {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Проектно-изыскательские работы
-        count = dict_files["pir"]
         if values.get("pir"):
+            count = dict_files["pir"]
             print(f'Загрузка файла nb110010.zip')
             log.debug(f'Загрузка файла nb110010.zip')
             window.refresh()
             try:
                 pir(headers=headers, path=values.get('path_save_base'))
+                log.debug(f"Загружен nb110010.zip")
             except Exception:
                 log.error(f"Не удалось загрузить nb110010.zip {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Ведомcтвенные и прочие сборники
-        count = dict_files["ved_sbor"]
         if values.get("ved_sbor"):
+            count = dict_files["ved_sbor"]
             print(f'Загрузка файла nb100003.zip')
             log.debug(f'Загрузка файла nb100003.zip')
             window.refresh()
@@ -448,25 +416,28 @@ def gui() -> None:
                     ved_sbor_yadisk(disk=disk, path=values.get('path_save_base'))
                 else:
                     ved_sbor(headers=headers, path=values.get('path_save_base'))
+                log.debug(f"Загружен nb100003.zip")
             except (Exception, UnavailableError):
                 log.error(f"Не удалось загрузить nb100003.zip {format_exc()}")
-
-        downloader += count
-        window['progress_1'].update(downloader)
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Lic
-        count = dict_files["lic"]
         if values.get('lic'):
+            count = dict_files["lic"]
             print('Загрузка лицензий')
             log.debug('Загрузка лицензий')
             window.refresh()
             try:
                 lic(path=values.get('path_save_lic'))
+                log.debug(f"Загружены лицензии ")
             except Exception:
                 log.error(f"Не удалось переместить лицензии {format_exc()}")
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
-        downloader += count
-        window['progress_1'].update(downloader)
         stop = time()
         all_time = round(stop - start, 2)
 
@@ -1083,6 +1054,4 @@ def lic(path: str) -> None:
 
 
 if __name__ == '__main__':
-
     gui()
-    print()
