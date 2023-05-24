@@ -53,7 +53,7 @@ def gui() -> None:
 
     dict_files_all = {
         "base2020": 11,
-        "base2022": 2,
+        "base2022": 3,
         "base2017": 6,
         "base2001_2009": 8,
         "base2001_2014": 4,
@@ -314,7 +314,7 @@ def gui() -> None:
 
         # 2022
         if values.get('base2022'):
-            list_number = [3, 5]
+            list_number = [3, 5, 6]
 
             for number in list_number:
                 print(f'Загрузка файла NB12100{number}.zip')
