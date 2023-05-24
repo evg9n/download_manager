@@ -124,7 +124,7 @@ def gui() -> None:
          sg.Checkbox(text='Гранд смета 2023.1.2', default=False, key="grand_smeta13_1_2")],
         [sg.Checkbox(text='Гранд смета 2023.1.3', default=False, key="grand_smeta13_1_3")],
         [sg.Checkbox(text='Яндекс Диск', default=True, key='yadisk')],
-        [sg.Checkbox(text='Lic', default=False, key='lic')],
+        [sg.Checkbox(text='Лицензии', default=False, key='lic')],
         [sg.Text('Путь для лицензий:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать',
                                                                         key='path_save_lic')],
         [
@@ -443,7 +443,7 @@ def gui() -> None:
                 downloader += count
                 window['progress_1'].update(downloader)
 
-        # Lic
+        # Лицензии
         if values.get('lic'):
             count = dict_files["lic"]
             print('Загрузка лицензий')
@@ -1097,14 +1097,16 @@ def grand_smeta12_3_3_yadisk(disk: YaDisk) -> None:
 
 def lic(path: str) -> None:
     """
-    Перемещает все файлы в директории Lic с расширением .lic в указанный путь
+    Перемещает все файлы в директории Лицензии с расширением .lic в указанный путь
     :param path: Путь перемещения
     :return: None
     """
-    listdir = os.listdir('Lic')
+    listdir = os.listdir('Лицензии')
     for file in listdir:
         if file.endswith('.lic'):
-            move(os.path.join('Lic', file), path)
+            log.debug(path)
+            log.debug(file)
+            move(os.path.join('Лицензии', file), os.path.join(path, file))
 
 
 if __name__ == '__main__':
