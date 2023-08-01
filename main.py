@@ -128,7 +128,7 @@ def gui() -> None:
         [sg.Checkbox(text='Гранд смета 2023.1.3', default=False, key="grand_smeta13_1_3"),
          sg.Checkbox(text='Гранд смета 2023.2.0', default=False, key="grand_smeta13_2_0"),
          sg.Checkbox(text='Гранд смета 2023.2.1', default=False, key="grand_smeta13_2_1"),
-         sg.Checkbox(text='Гранд смета 2023.2.1', default=False, key="grand_smeta13_2_2"),],
+         sg.Checkbox(text='Гранд смета 2023.2.2', default=False, key="grand_smeta13_2_2"),],
         [sg.Checkbox(text='Яндекс Диск', default=True, key='yadisk')],
         [sg.Checkbox(text='Лицензии', default=False, key='lic')],
         [sg.Text('Путь для лицензий:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать',
