@@ -398,7 +398,7 @@ def gui() -> None:
 
         # 2022
         if values.get('base2022'):
-            list_number = [3, 5, 6]
+            list_number = [3, 5, 6, 7]
 
             for number in list_number:
                 print(f'Загрузка файла NB12100{number}.zip')
