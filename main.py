@@ -120,7 +120,7 @@ def gui() -> None:
             sg.Checkbox(text='Укрупненные нормативы', default=False, key='ucrup_norm'),
             sg.Checkbox(text='Проектно-изыскательские работы', default=False, key='pir'),
             sg.Checkbox(text='Ведомcтвенные и прочие сборники', default=False, key='ved_sbor'),
-            sg.Checkbox(text='РТ', default=False, key='rt')
+            # sg.Checkbox(text='РТ', default=False, key='rt')
         ],
         [sg.Text('Путь для баз:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать', key='path_save_base')],
         [sg.Checkbox(text='Гранд смета 2022.3.3', default=False, key='grand_smeta12_3_3')],
@@ -137,7 +137,7 @@ def gui() -> None:
          sg.Checkbox(text='Гранд смета 2023.2.3', default=False, key="grand_smeta13_2_3"),
          sg.Checkbox(text='Гранд смета 2023.2.4', default=False, key="grand_smeta13_2_4")],
 
-        [sg.Checkbox(text='Яндекс Диск', default=False, key='yadisk')],
+        # [sg.Checkbox(text='Яндекс Диск', default=False, key='yadisk')],
         [sg.Checkbox(text='Лицензии', default=False, key='lic')],
         [sg.Text('Путь для лицензий:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать',
                                                                         key='path_save_lic')],
