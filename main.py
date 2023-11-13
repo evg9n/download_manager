@@ -69,6 +69,7 @@ def gui() -> None:
         "grand_smeta13_2_2": 5,
         "grand_smeta13_2_3": 5,
         "grand_smeta13_2_4": 5,
+        "grand_smeta13_3_0": 5,
         "lic": 1,
         "ucrup_norm": 1,
         "pir": 1,
@@ -123,6 +124,7 @@ def gui() -> None:
             # sg.Checkbox(text='РТ', default=False, key='rt')
         ],
         [sg.Text('Путь для баз:'), sg.InputText(), sg.FolderBrowse(button_text='Выбрать', key='path_save_base')],
+
         [sg.Checkbox(text='Гранд смета 2022.3.3', default=False, key='grand_smeta12_3_3')],
 
         [sg.Checkbox(text='Гранд смета 2023.1.0', default=False, key="grand_smeta13_1_0"),
@@ -136,6 +138,8 @@ def gui() -> None:
          sg.Checkbox(text='Гранд смета 2023.2.2', default=False, key="grand_smeta13_2_2"),
          sg.Checkbox(text='Гранд смета 2023.2.3', default=False, key="grand_smeta13_2_3"),
          sg.Checkbox(text='Гранд смета 2023.2.4', default=False, key="grand_smeta13_2_4")],
+
+        [sg.Checkbox(text='Гранд смета 2023.3.0', default=False, key='grand_smeta13_3_0')],
 
         # [sg.Checkbox(text='Яндекс Диск', default=False, key='yadisk')],
         [sg.Checkbox(text='Лицензии', default=False, key='lic')],
@@ -176,6 +180,21 @@ def gui() -> None:
         download_score_max = sum(dict_files.values())
         window['progress_1'].update(current_count=0, max=download_score_max)
         start = time()
+
+        # Гранд Смета 2023.3.0
+        if values.get('grand_smeta13_3_0'):
+            count = dict_files["grand_smeta13_3_0"]
+            print('Загрузка дистрибутива Гранд Смета 2023.3.0')
+            log.debug('Загрузка дистрибутива Гранд Смета 2023.3.0')
+            window.refresh()
+            try:
+                grand_smeta13_3_0(headers=headers)
+                log.debug(f"Загружен дистрибутив Гранд Смета 2023.3.0")
+            except (Exception, UnavailableError):
+                log.error(f"Не удалось загрузить дистрибутив Гранд Смета 2023.3.0 {format_exc()}")
+            finally:
+                downloader += count
+                window['progress_1'].update(downloader)
 
         # Гранд Смета 2023.2.4
         if values.get('grand_smeta13_2_4'):
@@ -1094,6 +1113,24 @@ def grand_smeta13_1_2_yadisk(disk: YaDisk) -> None:
     disk.download(src_path, file_or_path)
 
     with ZipFile(file_or_path) as zipp:
+        zipp.extractall('Download')
+
+
+def grand_smeta13_3_0(headers: Dict) -> None:
+    """
+    Загружает c официального сайта Гранд Смета www.grandsmeta.ru
+    и распаковываем дистрибутив программы Гранд Смета 2023.3.0 в директорию Download
+    :param headers: Заголовок get-запроса
+    :return: None
+    """
+
+    url = 'https://cdn.grandsmeta.ru/ftp/grandsmeta/distrib/smeta2023.3.0.zip'
+    res = get(url=url, headers=headers)
+    path_arh = os.path.join('Download', "smeta2023.3.0.zip")
+    with open(path_arh, 'wb') as file:
+        file.write(res.content)
+
+    with ZipFile(path_arh) as zipp:
         zipp.extractall('Download')
 
 
